@@ -70,6 +70,16 @@ def compatible_openai(adresse: str) -> bool:
     return adresse.rstrip("/").endswith("/v1")
 
 
+def nom_du_modele(environnement: dict[str, str] | None = None) -> str:
+    """Le modèle qui sera employé. Sert à l'afficher : une trace doit dire *qui* a répondu.
+
+    Ni l'adresse ni la clé ne sortent d'ici. L'adresse désigne un hôte, la clé est un secret ;
+    le nom du modèle, lui, est ce qu'un lecteur de trace a besoin de savoir.
+    """
+    env = environnement if environnement is not None else os.environ
+    return env.get("AZURE_AI_MODEL") or MODELE_PAR_DEFAUT
+
+
 def configure(environnement: dict[str, str] | None = None) -> bool:
     """Un modèle est-il joignable ? Sert à ne pas promettre ce qui n'est pas disponible."""
     env = environnement if environnement is not None else os.environ
@@ -95,7 +105,7 @@ def fabriquer(
     if not adresse or not cle:
         return None
 
-    modele = env.get("AZURE_AI_MODEL") or MODELE_PAR_DEFAUT
+    modele = nom_du_modele(env)
     try:
         if compatible_openai(adresse):
             from openai import OpenAI

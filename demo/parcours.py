@@ -7,7 +7,7 @@ qu'elle n'a pas exécutée serait un mensonge dans une pièce qui sert de preuve
 Mais s'arrêter là laisse invisible ce qui compte le plus : **l'ordre de grandeur**. Les cinq
 agents traitent une demande complète en une fraction de milliseconde ; l'extraction assistée par
 un modèle met plusieurs secondes. Tant qu'on ne les voit pas sur la même ligne, on ne mesure pas
-ce que `D25` évite.
+ce que le premier cercle de `D31` écarte du chemin de décision.
 
 Ce module compose donc les deux, **en gardant la frontière lisible** : chaque étape dit si elle
 appartient au système ou non.

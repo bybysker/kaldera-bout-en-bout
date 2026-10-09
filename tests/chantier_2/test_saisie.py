@@ -5,7 +5,8 @@ jeu de récits avec leur résultat attendu, et le passent aux deux extracteurs. 
 évalué à chaque exécution ; celui qui s'appuie sur un modèle ne l'est que si un modèle est
 configuré — sinon le test est ignoré, pas supprimé.
 
-C'est aussi la garantie que `D25` tient : rien ici ne touche au chemin de décision. Le résultat
+C'est aussi la garantie que le premier cercle de `D31` tient : rien ici ne touche au chemin de
+décision. Le résultat
 d'une extraction est relu avant d'être déposé.
 """
 
@@ -254,7 +255,7 @@ def test_le_modele_rend_ce_qu_on_attend(intitule: str, recit: str, attendu: dict
 
 
 def test_la_saisie_ne_touche_jamais_au_paquet_kaldera() -> None:
-    """`D25` — aucun modèle dans le chemin de décision. Celui-ci est en amont, chez le tiers."""
+    """`D31` — aucun modèle dans le chemin de décision. Celui-ci est en amont, chez le tiers."""
     import ast
     from pathlib import Path
 
@@ -340,7 +341,7 @@ def test_un_recit_porte_des_donnees_personnelles_dans_son_texte() -> None:
     assert "FR76" not in str(produite.en_dict()), "un IBAN ne doit jamais sortir de la saisie"
 
 
-# ------------------------------------- le temps, qui justifie D25 au chronomètre
+# ------------------------------------- le temps, qui justifie D31 au chronomètre
 
 
 def test_l_extraction_par_regles_reste_sous_la_milliseconde() -> None:
@@ -357,7 +358,7 @@ def test_le_traitement_complet_d_une_demande_est_cent_fois_plus_rapide_qu_un_mod
 
     Les cinq agents du chemin de décision traitent une demande complète en une fraction de
     milliseconde. C'est l'ordre de grandeur qu'un appel à un modèle ferait perdre, et c'est la
-    justification empirique de `D25`.
+    justification empirique de `D31`.
     """
     import time
 

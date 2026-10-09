@@ -12,9 +12,10 @@ traduction déterministe de ``courtier.py``, puis par la porte publique de Kalde
 
 ---
 
-**Pourquoi c'est compatible avec `D25`.** La décision disait : aucun modèle **dans le chemin de
-décision d'une demande**. Ce module est hors du paquet `kaldera`, hors de la recette, et son
-résultat est relu par un humain avant d'être déposé. Le déterminisme du système n'est pas touché.
+**Où cet usage se range.** `D31` pose une règle unique : *un modèle peut informer un humain,
+jamais décider à sa place dans le temps contraint.* Celui-ci est le troisième cercle — **hors du
+système**. Ce module vit hors du paquet `kaldera`, hors de la recette, et son résultat est relu
+par un opérateur avant d'être déposé. Le déterminisme du système n'est pas touché.
 
 **Deux extracteurs, et le déterministe reste le défaut.**
 

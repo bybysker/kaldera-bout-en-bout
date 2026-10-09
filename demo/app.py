@@ -67,7 +67,7 @@ charger_env()
 #: faux ne se fait pas corriger : elle se fait croire. Les trois premiers sont donc confrontés à
 #: ce qu'ils prétendent décrire (`tests/chantier_1/test_demo.py`) ; s'ils divergent, un test
 #: tombe. Le quatrième ne peut pas l'être sans lancer `coverage` : il est daté à la place.
-TESTS_REPRODUCTIBLES = 734
+TESTS_REPRODUCTIBLES = 736
 TESTS_ACCEPTANCE = 56
 MUTATIONS_DETECTEES = 19
 COUVERTURE = "96 %"
@@ -264,7 +264,14 @@ with espaces[0]:
                 f"{declaration.duree_ms / 10_000 * 100:.1f} %",
             )
             st.session_state["declaration"] = declaration
-            st.caption(f"Extracteur : **{declaration.extracteur}**")
+            st.caption(
+                f"Extracteur : **{declaration.extracteur}**"
+                + (
+                    f" — modèle **{llm.nom_du_modele()}**"
+                    if declaration.extracteur == "modèle"
+                    else ""
+                )
+            )
 
             if declaration.duree_ms > 500:
                 st.error(
@@ -272,7 +279,8 @@ with espaces[0]:
                     "cinq agents du chemin de décision traitent une demande complète en "
                     "**0,04 ms** — cent mille fois moins. Un modèle dans le chemin de décision "
                     "ne ferait pas seulement perdre le déterminisme : il consommerait presque "
-                    "tout l'engagement de service. C'est `D25`, vérifié au chronomètre."
+                    "tout l'engagement de service. C'est le premier cercle de `D31` — *jamais dans le "
+                    "chemin de décision synchrone* — vérifié au chronomètre."
                 )
             elif assiste:
                 st.caption(
@@ -523,7 +531,7 @@ with espaces[1]:
 
             avis = st.session_state.get(f"revue_{choix_gestion}")
             if avis:
-                entetes = st.columns(3)
+                entetes = st.columns(4)
                 entetes[0].metric(
                     "Verdict",
                     {
@@ -533,7 +541,19 @@ with espaces[1]:
                     }[avis["verdict"]],
                 )
                 entetes[1].metric("Motif clair", "oui" if avis["motif_clair"] else "non")
-                entetes[2].metric("Durée", _duree(avis["duree_ms"]))
+                entetes[2].metric(
+                    "Cohérence des pièces",
+                    {
+                        "plausible": "plausible",
+                        "douteuse": "douteuse",
+                        "indeterminable": "indéterminable",
+                    }[avis["coherence_pieces"]],
+                    help=(
+                        "Avis consultatif : il n'entre dans aucune décision. Le contrôle des "
+                        "pièces reste le tableau des pièces exigées."
+                    ),
+                )
+                entetes[3].metric("Durée", _duree(avis["duree_ms"]))
 
                 if avis["verdict"] == "a_revoir":
                     st.warning("**Ce dossier mérite un regard.** Points relevés :")
@@ -553,9 +573,20 @@ with espaces[1]:
                         "la fraude, que le relecteur n'a pas le droit d'aborder *(specs §2 — "
                         "« l'avis de fraude est émis par le partenaire, jamais en interne »)*."
                     )
+                if avis["coherence_pieces"] == "douteuse":
+                    st.warning(
+                        "**Les pièces paraissent peu cohérentes avec ce sinistre.** Cet avis "
+                        "n'a modifié aucune décision : le contrôle des pièces s'en tient au "
+                        "tableau des pièces exigées, faute d'un critère défini par le métier "
+                        "*(`D3`)*. La question est posée ici sans qu'aucune décision n'en "
+                        "dépende — c'est ce qui permet de la mesurer en attendant la réponse."
+                    )
+
                 st.caption(
                     "Le récit de l'assuré **n'est pas transmis** au modèle tant que le métier "
-                    "n'a pas tranché la question. Seuls des champs structurés partent."
+                    "n'a pas tranché la question *(`D32`)*. Seuls des champs structurés "
+                    "partent — la cohérence ne se juge donc que sur la **structure** : types "
+                    "de pièces et montants au regard de la nature du sinistre."
                 )
 
     with vues_gestion[2]:
@@ -1168,7 +1199,8 @@ with espaces[2]:
                         f"**{part * 100:.0f} % du temps total est consommé par l'appel au "
                         "modèle**, et il se passe **hors du système**. La plateforme, elle, a "
                         f"traité la demande en {repartition_temps.get('kaldera', 0):.0f} ms. "
-                        "C'est `D25` au chronomètre : un modèle dans le chemin de décision ne "
+                        "C'est le premier cercle de `D31` au chronomètre : un modèle dans le chemin "
+                        "de décision ne "
                         "ferait pas seulement perdre le déterminisme, il mangerait presque tout "
                         "l'engagement de service."
                     )
@@ -1264,6 +1296,20 @@ with espaces[2]:
             "Un modèle peut <b>informer un humain</b>, jamais <b>décider à sa place</b> "
             "dans le temps contraint.</div>",
             unsafe_allow_html=True,
+        )
+
+        joignable = llm.configure()
+        st.markdown(
+            f"**Modèle employé** : `{llm.nom_du_modele()}` — "
+            + (
+                "joignable sur ce poste."
+                if joignable
+                else "**aucun accès configuré ici** : les cinq usages se replient, aucun ne bloque."
+            )
+        )
+        st.caption(
+            "Un seul modèle sert les cinq usages. Ni l'adresse ni la clé n'apparaissent dans "
+            "cette interface, ni dans les journaux."
         )
 
         st.markdown("##### Les trois cercles")

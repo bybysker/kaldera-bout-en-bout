@@ -498,7 +498,8 @@ def chronologie_parcours(etapes: list[dict[str, Any]]) -> str:
     """Le parcours de bout en bout, saisie comprise — avec la frontière du système visible.
 
     La trace de la plateforme ne porte pas la saisie, et c'est juste : elle ne l'a pas exécutée.
-    Mais les mettre sur la même ligne est la seule façon de voir ce que `D25` évite — un appel
+    Mais les mettre sur la même ligne est la seule façon de voir ce que `D31` écarte du chemin
+    de décision — un appel
     à un modèle pèse plusieurs secondes là où cinq agents pèsent une fraction de milliseconde.
     """
     from demo.parcours import ACTEURS

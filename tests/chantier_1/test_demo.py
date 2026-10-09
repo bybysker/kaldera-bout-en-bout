@@ -367,3 +367,28 @@ def test_les_chiffres_affiches_sont_ceux_que_la_suite_produit() -> None:
         f"la démonstration annonce {MUTATIONS_DETECTEES} mutations, l'épreuve en définit "
         f"{len(MUTATIONS)}"
     )
+
+
+#: Les décisions qu'une autre a remplacées. Citer la première induit en erreur.
+DECISIONS_REMPLACEES = {"D25": "D31"}
+
+
+def test_ni_le_code_ni_la_demonstration_ne_citent_une_decision_remplacee() -> None:
+    """Une référence périmée ne se voit pas : elle se croit.
+
+    `D25` excluait tout modèle du système ; `D31` l'a remplacée par cinq usages et trois
+    cercles. Les deux disent des choses différentes, et un lecteur qui remonte à la première
+    comprend l'inverse de ce qui est en vigueur.
+    """
+    fautifs = []
+    for racine in (RACINE / "src", RACINE / "demo", RACINE / "tests"):
+        for fichier in racine.rglob("*.py"):
+            texte = fichier.read_text(encoding="utf-8")
+            for ancienne in DECISIONS_REMPLACEES:
+                if ancienne in texte and "DECISIONS_REMPLACEES" not in texte:
+                    fautifs.append(f"{fichier.relative_to(RACINE).as_posix()} cite {ancienne}")
+    assert not fautifs, (
+        "références périmées : "
+        + " ; ".join(fautifs)
+        + f" — remplacements attendus : {DECISIONS_REMPLACEES}"
+    )

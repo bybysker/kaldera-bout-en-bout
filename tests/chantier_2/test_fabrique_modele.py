@@ -151,3 +151,10 @@ def test_aucun_agent_ni_l_orchestration_n_importe_la_fabrique() -> None:
             if any(n == "llm" or n.endswith(".llm") for n in noms):
                 fautifs.append(chemin)
     assert not fautifs, f"ces modules importent la fabrique de modèle : {sorted(set(fautifs))}"
+
+
+def test_le_nom_du_modele_se_lit_sans_que_la_cle_sorte() -> None:
+    """Une trace doit dire *qui* a répondu. Elle ne doit pas dire avec quelle clé."""
+    assert llm.nom_du_modele(environnement={}) == llm.MODELE_PAR_DEFAUT
+    assert llm.nom_du_modele(environnement={"AZURE_AI_MODEL": "autre"}) == "autre"
+    assert llm.nom_du_modele(environnement=AZURE) == llm.MODELE_PAR_DEFAUT
