@@ -26,7 +26,10 @@ from kaldera import llm
 #: Les suites qu'un gestionnaire peut décider — reprises de `gestionnaire.SUITES`.
 SUITES_POSSIBLES = ("accepter", "refuser", "complement", "cellule_fraude")
 
-JETONS_MAX = 4000
+#: Mesuré : un modèle de raisonnement consomme 2 200 à 4 400 jetons pour rendre ~400 caractères
+#: de JSON. À 4 000, quatre suggestions sur dix revenaient **tronquées**, et l'appelant ne voyait
+#: qu'un JSON illisible. Le plafond laisse désormais de la marge au raisonnement.
+JETONS_MAX = 8000
 
 #: Généreux : ces aides sont hors du budget des dix secondes.
 DELAI_S = 60.0
@@ -93,6 +96,12 @@ def synthese(
                 ("human", json.dumps(_dossier(fiche, demande), ensure_ascii=False, indent=2)),
             ]
         )
+        if llm.tronquee(brut):
+            return {
+                "texte": "",
+                "disponible": False,
+                "cause": "réponse tronquée : le plafond de jetons a été atteint",
+            }
         texte = (getattr(brut, "content", "") or "").strip()
     except Exception as exc:  # noqa: BLE001
         return {
@@ -125,6 +134,8 @@ def suggestion(
                 ("human", json.dumps(_dossier(fiche, demande), ensure_ascii=False, indent=2)),
             ]
         )
+        if llm.tronquee(brut):
+            return _sans_suggestion("réponse tronquée : le plafond de jetons a été atteint")
         donnees = _lire_json(getattr(brut, "content", "") or "")
     except Exception as exc:  # noqa: BLE001
         return _sans_suggestion(f"modèle en échec ({type(exc).__name__})")

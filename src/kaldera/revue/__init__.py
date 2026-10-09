@@ -3,7 +3,8 @@
 Le formateur a ouvert le brief : un modèle de langage peut entrer dans le système. La question
 devient donc « à quel degré, et à quel endroit », et elle se tranche avec des mesures.
 
-**Ce que les mesures disent.** Un appel au modèle met de 3,5 à 10,6 secondes sur ce poste, pour
+**Ce que les mesures disent.** Un appel au modèle met de 5,6 à 12,8 secondes sur ce poste pour une revue — mesuré sur dix
+appels — pour
 un engagement de service de 10 secondes par demande. Les cinq agents du chemin de décision
 traitent une demande complète en 0,04 ms. Placer un modèle dans ce chemin reviendrait à faire
 dépendre la tenue de l'engagement d'un service tiers dont la latence varie du simple au triple.

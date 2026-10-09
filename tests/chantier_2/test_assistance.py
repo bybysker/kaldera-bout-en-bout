@@ -10,7 +10,10 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import pytest
+
 from demo.agence import assistance
+from kaldera import llm
 from tests.chantier_2.test_revue import DEMANDE, FICHE, ModeleFictif
 
 
@@ -101,3 +104,38 @@ def test_la_suggestion_ne_porte_sur_aucune_suite_par_defaut() -> None:
     """Rien n'est pré-sélectionné : un bouton déjà coché est une décision prise par la machine."""
     sans = assistance.suggestion(FICHE, DEMANDE, fabrique=lambda: None)
     assert sans["suite"] is None
+
+
+# ------------------------------------------- avec un vrai modèle, et c'est la seule preuve
+
+
+@pytest.mark.modele
+@pytest.mark.skipif(not llm.configure(), reason="aucun modèle configuré")
+def test_une_troncature_est_nommee_plutot_que_subie() -> None:
+    """Le défaut que l'absence de ce test avait laissé passer.
+
+    Avec un plafond de jetons trop bas, un modèle de raisonnement s'arrête **avant** d'avoir
+    fini d'écrire son JSON. L'appelant ne voyait alors qu'un `ValueError` qui ne désignait pas
+    la cause — et quatre suggestions sur dix échouaient ainsi, sans que rien ne le dise.
+    """
+    etriquee = assistance.suggestion(FICHE, DEMANDE, fabrique=lambda: llm.fabriquer(jetons_max=16))
+    assert not etriquee["disponible"]
+    assert "tronquée" in etriquee["cause"], etriquee["cause"]
+
+
+@pytest.mark.modele
+@pytest.mark.skipif(not llm.configure(), reason="aucun modèle configuré")
+def test_les_deux_aides_aboutissent_contre_le_modele_reel() -> None:
+    """Mesuré sur 10 appels chacune : 10 sur 10 exploitables, après relèvement du plafond.
+
+    Un double ne peut pas prouver cela : c'est le modèle réel qui décide combien de jetons il
+    consomme avant de répondre.
+    """
+    resume = assistance.synthese(FICHE, DEMANDE)
+    assert resume["disponible"], resume["cause"]
+    assert resume["texte"].strip()
+
+    conseil = assistance.suggestion(FICHE, DEMANDE)
+    assert conseil["disponible"], conseil["cause"]
+    assert conseil["suite"] in assistance.SUITES_POSSIBLES
+    assert conseil["contre"].strip(), "une suggestion sans contre-argument doit être écartée"

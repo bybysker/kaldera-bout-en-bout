@@ -26,10 +26,35 @@ démonstration. Un test lit les imports du paquet pour que cela reste vrai.
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from typing import Any, Protocol
 
 #: Le modèle employé faute d'indication. Les mesures du dossier portent sur celui-ci.
 MODELE_PAR_DEFAUT = "Kimi-K2.6"
+
+
+#: La réponse rendue par l'adaptateur compatible OpenAI.
+#:
+#: `raison_arret` est ce qui manquait : quand le modèle épuise son plafond de jetons avant
+#: d'avoir fini, il rend un texte **tronqué** et l'appelant ne voit qu'un JSON illisible. Mesuré
+#: sur l'aide à la décision : 4 dossiers sur 10 échouaient ainsi, avec un `ValueError` qui ne
+#: désignait pas la cause.
+@dataclass(frozen=True)
+class Reponse:
+    content: str
+    raison_arret: str | None = None
+
+
+def tronquee(reponse: Any) -> bool:
+    """La réponse s'est-elle arrêtée faute de jetons, plutôt que parce qu'elle était finie ?
+
+    Les deux familles de clients le disent différemment ; les appelants n'ont pas à le savoir.
+    """
+    raison = getattr(reponse, "raison_arret", None)
+    if raison is None:
+        metadonnees = getattr(reponse, "response_metadata", None) or {}
+        raison = metadonnees.get("finish_reason")
+    return raison == "length"
 
 
 class Modele(Protocol):
@@ -62,7 +87,8 @@ class _ClientCompatibleOpenAI:
             max_tokens=self._jetons_max,
             temperature=self._temperature,
         )
-        return reponse.choices[0].message
+        choix = reponse.choices[0]
+        return Reponse(choix.message.content or "", choix.finish_reason)
 
 
 def compatible_openai(adresse: str) -> bool:

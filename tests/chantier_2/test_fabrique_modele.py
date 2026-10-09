@@ -101,8 +101,14 @@ class _FauxClient:
     def create(self, **arguments: Any) -> Any:
         self.recu = arguments
 
+        choix = type(
+            "C",
+            (),
+            {"message": type("M", (), {"content": "ok"})(), "finish_reason": "stop"},
+        )()
+
         class _Reponse:
-            choices = [type("C", (), {"message": type("M", (), {"content": "ok"})()})()]
+            choices = [choix]
 
         return _Reponse()
 
@@ -158,3 +164,16 @@ def test_le_nom_du_modele_se_lit_sans_que_la_cle_sorte() -> None:
     assert llm.nom_du_modele(environnement={}) == llm.MODELE_PAR_DEFAUT
     assert llm.nom_du_modele(environnement={"AZURE_AI_MODEL": "autre"}) == "autre"
     assert llm.nom_du_modele(environnement=AZURE) == llm.MODELE_PAR_DEFAUT
+
+
+def test_une_reponse_tronquee_se_reconnait() -> None:
+    """Un modèle qui épuise son plafond rend un texte coupé, pas une erreur.
+
+    Sans ce signal, l'appelant ne voit qu'un JSON illisible — c'est ce qui faisait échouer
+    quatre suggestions sur dix sans que rien ne désigne la cause *(`AJ-11`)*.
+    """
+    assert llm.tronquee(llm.Reponse("{ incompl", "length"))
+    assert not llm.tronquee(llm.Reponse("{}", "stop"))
+    # L'autre famille de client le dit dans ses métadonnées, et l'appelant n'a pas à le savoir.
+    assert llm.tronquee(type("M", (), {"response_metadata": {"finish_reason": "length"}})())
+    assert not llm.tronquee(type("M", (), {"content": "{}"})())

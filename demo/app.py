@@ -67,7 +67,7 @@ charger_env()
 #: faux ne se fait pas corriger : elle se fait croire. Les trois premiers sont donc confrontés à
 #: ce qu'ils prétendent décrire (`tests/chantier_1/test_demo.py`) ; s'ils divergent, un test
 #: tombe. Le quatrième ne peut pas l'être sans lancer `coverage` : il est daté à la place.
-TESTS_REPRODUCTIBLES = 736
+TESTS_REPRODUCTIBLES = 737
 TESTS_ACCEPTANCE = 56
 MUTATIONS_DETECTEES = 19
 COUVERTURE = "96 %"
@@ -518,8 +518,9 @@ with espaces[1]:
             st.markdown("##### La revue de fond")
             st.caption(
                 "Un sixième agent relit la décision **après** qu'elle est prise. Il ne la "
-                "change pas : il dit si elle mérite votre attention. Mesuré de 3,5 à 18 s selon "
-                "le dossier — c'est précisément pourquoi il passe après, et non pendant."
+                "change pas : il dit si elle mérite votre attention. Mesuré sur 10 appels : "
+                "médiane **9,0 s**, maximum **12,8 s** — c'est précisément pourquoi il "
+                "passe après, et non pendant."
             )
 
             if st.button("Relire ce dossier", use_container_width=True, key="relire"):
@@ -1320,7 +1321,7 @@ with espaces[2]:
                 "#C8432B",
                 "#FBE9E5",
                 "Le chemin de décision synchrone",
-                "3,5 à 18 s mesurés contre 10 s d'engagement. Et le déterminisme que les "
+                "2,5 à 35,5 s mesurés contre 10 s d'engagement. Et le déterminisme que les "
                 "tests d'acceptance exigent.",
             ),
             (
@@ -1351,6 +1352,10 @@ with espaces[2]:
 
         st.divider()
         st.markdown("##### Les cinq usages, et où la règle les place")
+        st.caption(
+            "Latences mesurées le 9 octobre 2026 sur `Kimi-K2.6` : **10 appels par usage**, "
+            "cinq dossiers distincts répétés deux fois. **40 appels sur 40 exploitables.**"
+        )
         st.markdown(
             tableau(
                 [
@@ -1358,14 +1363,14 @@ with espaces[2]:
                         "usage": "Prise de déclaration",
                         "cercle": "hors système",
                         "où": "amont, chez le courtier",
-                        "latence mesurée": "3,5 – 9,3 s",
+                        "latence mesurée": "médiane 5,1 s · max 12,7 s",
                         "ce qu'il décide": "rien — l'opérateur relit avant de déposer",
                     },
                     {
                         "usage": "Revue de fond",
                         "cercle": "asynchrone",
                         "où": "après la décision",
-                        "latence mesurée": "3,5 – 18 s",
+                        "latence mesurée": "médiane 9,0 s · max 12,8 s",
                         "ce qu'il décide": "rien — il signale, un humain tranche",
                     },
                     {
@@ -1379,14 +1384,14 @@ with espaces[2]:
                         "usage": "Synthèse de dossier",
                         "cercle": "hors système",
                         "où": "espace gestionnaire",
-                        "latence mesurée": "~5 s",
+                        "latence mesurée": "médiane 12,5 s · max 23,1 s",
                         "ce qu'il décide": "rien — s'ajoute à la fiche, ne la remplace pas",
                     },
                     {
                         "usage": "Aide à la décision",
                         "cercle": "hors système",
                         "où": "espace gestionnaire",
-                        "latence mesurée": "~7 s",
+                        "latence mesurée": "médiane 18,4 s · max 35,5 s",
                         "ce qu'il décide": "rien — rien n'est pré-sélectionné",
                     },
                 ]
@@ -1399,7 +1404,8 @@ with espaces[2]:
             st.markdown("##### Ce que la mesure a tranché")
             st.markdown(
                 "Un appel au modèle, pour **une phrase de 25 mots** :\n\n"
-                "- latence **3,5 à 10,6 s**, facteur 2,6 entre deux appels\n"
+                "- latence **2,5 à 35,5 s** selon l'usage, sur 40 appels mesurés\n"
+                "- jusqu'à **2,6** entre deux appels sur le même dossier\n"
                 "- **1 243 jetons** consommés pour ~35 jetons utiles\n"
                 "- **0 formulation identique** sur 5 appels\n\n"
                 "Les cinq agents du chemin de décision traitent une demande complète en "
@@ -1452,7 +1458,7 @@ with espaces[2]:
             st.markdown(
                 "- **Cinq usages**, placés par une seule règle *(`D31`)* — voir l'onglet "
                 "**Les modèles**\n"
-                "- **Aucun dans le chemin de décision synchrone** : 3,5 à 18 s mesurés "
+                "- **Aucun dans le chemin de décision synchrone** : 2,5 à 35,5 s mesurés "
                 "contre 10 s d'engagement\n"
                 "- Ils n'ont **jamais le dernier mot** : ils informent, un humain tranche\n"
                 "- Non déterministes : leurs tests sont écartés de la suite, `make modele` "

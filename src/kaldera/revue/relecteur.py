@@ -2,10 +2,11 @@
 
 ---
 
-**Pourquoi après, et pas pendant.** Mesuré sur ce poste, un appel au modèle met de 3,5 à
-10,6 secondes, avec un facteur 2,6 entre deux appels sur la même question. L'engagement de
-service est de **10 secondes par demande** : un appel sur cinq le dépasserait à lui seul. Les
-cinq agents du chemin de décision, eux, traitent une demande complète en **0,04 ms**.
+**Pourquoi après, et pas pendant.** Mesuré sur dix revues de dossier : médiane **8,97 s**,
+maximum **12,76 s**, avec jusqu'à 2,6 d'écart entre deux appels sur le même dossier.
+L'engagement de service est de **10 secondes par demande** : trois revues sur dix le
+dépasseraient à elles seules. Les cinq agents du chemin de décision, eux, traitent une demande
+complète en **0,04 ms**.
 
 Un modèle dans le chemin de décision ne ferait donc pas seulement perdre le déterminisme — il
 consommerait presque tout le budget, et rendrait la tenue de l'engagement dépendante d'un
@@ -43,9 +44,10 @@ from . import charge as module_charge
 #: Au-delà, on cesse d'attendre. Généreux à dessein : nous ne sommes plus dans le budget des 10 s.
 DELAI_MAX_S = 30.0
 
-#: Un modèle de raisonnement consomme des jetons avant de répondre — mesuré : ~1 240 pour une
-#: phrase. Trop peu, et la réponse revient vide sans qu'aucune erreur ne soit levée.
-JETONS_MAX = 4000
+#: Un modèle de raisonnement consomme des jetons avant de répondre — mesuré : 2 200 à 4 400 pour
+#: rendre quelques centaines de caractères de JSON. Trop peu, et la réponse revient **tronquée**
+#: sans qu'aucune erreur ne soit levée : c'est ce qui faisait échouer une revue sur deux.
+JETONS_MAX = 8000
 
 NIVEAUX = ("conforme", "a_revoir", "non_disponible")
 
@@ -116,6 +118,12 @@ class Relecteur:
                     ("human", json.dumps(dossier, ensure_ascii=False, indent=2)),
                 ]
             )
+            if llm.tronquee(brut):
+                return _avis(
+                    "non_disponible",
+                    cause="réponse tronquée : le plafond de jetons a été atteint",
+                    duree_ms=(time.perf_counter() - debut) * 1000,
+                )
             donnees = _lire_json(getattr(brut, "content", str(brut)))
         except Exception as exc:  # noqa: BLE001 — une revue qui tombe ne casse rien
             return _avis(
