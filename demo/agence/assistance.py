@@ -19,13 +19,17 @@ décision prise par la machine, même si un humain la valide ensuite d'un clic.
 from __future__ import annotations
 
 import json
-import os
 from typing import Any
+
+from kaldera import llm
 
 #: Les suites qu'un gestionnaire peut décider — reprises de `gestionnaire.SUITES`.
 SUITES_POSSIBLES = ("accepter", "refuser", "complement", "cellule_fraude")
 
 JETONS_MAX = 4000
+
+#: Généreux : ces aides sont hors du budget des dix secondes.
+DELAI_S = 60.0
 
 CONSIGNE_SYNTHESE = """Tu résumes un dossier d'assurance habitation pour le gestionnaire qui va
 le reprendre. Il ne l'a jamais vu.
@@ -54,48 +58,15 @@ Règles :
 - "faible" est une réponse honnête quand le dossier ne permet pas de trancher."""
 
 
-class _ClientOpenAI:
-    def __init__(self, client: Any, modele: str) -> None:
-        self._client = client
-        self._modele = modele
-
-    def invoke(self, messages: list[tuple[str, str]]) -> Any:
-        roles = {"system": "system", "human": "user"}
-        reponse = self._client.chat.completions.create(
-            model=self._modele,
-            messages=[
-                {"role": roles.get(role, role), "content": contenu} for role, contenu in messages
-            ],
-            max_tokens=JETONS_MAX,
-            temperature=0,
-        )
-        return reponse.choices[0].message
-
-
 def _modele(fabrique: Any = None) -> Any:
+    """Le client de modèle, construit par la fabrique unique du paquet `kaldera`.
+
+    L'espace gestionnaire est une interface de Kaldera, pas un tiers : il emprunte la même
+    fabrique que la revue plutôt que d'en réapprendre les subtilités.
+    """
     if fabrique is not None:
         return fabrique()
-    adresse = os.environ.get("AZURE_AI_ENDPOINT", "")
-    cle = os.environ.get("AZURE_AI_API_KEY", "")
-    if not adresse or not cle:
-        return None
-    try:
-        if adresse.rstrip("/").endswith("/v1"):
-            from openai import OpenAI
-
-            return _ClientOpenAI(
-                OpenAI(base_url=adresse, api_key=cle, timeout=60.0),
-                os.environ.get("AZURE_AI_MODEL", "Kimi-K2.6"),
-            )
-        from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
-
-        return AzureAIChatCompletionsModel(
-            endpoint=adresse,
-            credential=cle,
-            model=os.environ.get("AZURE_AI_MODEL", "Kimi-K2.6"),
-        )
-    except Exception:  # noqa: BLE001 — dépendance absente ou mal configurée
-        return None
+    return llm.fabriquer(jetons_max=JETONS_MAX, delai_s=DELAI_S)
 
 
 def _dossier(fiche: dict[str, Any], demande: dict[str, Any]) -> dict[str, Any]:

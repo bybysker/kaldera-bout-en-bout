@@ -33,11 +33,11 @@ le relecteur travaille sur ce qui est déjà décidé.
 from __future__ import annotations
 
 import json
-import os
 import re
 import time
 from typing import Any
 
+from .. import llm
 from . import charge as module_charge
 
 #: Au-delà, on cesse d'attendre. Généreux à dessein : nous ne sommes plus dans le budget des 10 s.
@@ -95,9 +95,7 @@ class Relecteur:
         self._fabrique = fabrique
 
     def disponible(self) -> bool:
-        return self._fabrique is not None or bool(
-            os.environ.get("AZURE_AI_ENDPOINT") and os.environ.get("AZURE_AI_API_KEY")
-        )
+        return self._fabrique is not None or llm.configure()
 
     def relire(self, demande: dict[str, Any], fiche: dict[str, Any]) -> dict[str, Any]:
         """Rend toujours la même forme, quoi qu'il arrive."""
@@ -131,47 +129,7 @@ class Relecteur:
     def _modele(self) -> Any:
         if self._fabrique is not None:
             return self._fabrique()
-        adresse = os.environ.get("AZURE_AI_ENDPOINT", "")
-        cle = os.environ.get("AZURE_AI_API_KEY", "")
-        if not adresse or not cle:
-            return None
-        try:
-            if adresse.rstrip("/").endswith("/v1"):
-                from openai import OpenAI
-
-                return _ClientOpenAI(
-                    OpenAI(base_url=adresse, api_key=cle, timeout=DELAI_MAX_S),
-                    os.environ.get("AZURE_AI_MODEL", "Kimi-K2.6"),
-                )
-            from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
-
-            return AzureAIChatCompletionsModel(
-                endpoint=adresse,
-                credential=cle,
-                model=os.environ.get("AZURE_AI_MODEL", "Kimi-K2.6"),
-            )
-        except Exception:  # noqa: BLE001 — dépendance absente ou mal configurée
-            return None
-
-
-class _ClientOpenAI:
-    """Donne à un client compatible OpenAI la forme attendue ici."""
-
-    def __init__(self, client: Any, modele: str) -> None:
-        self._client = client
-        self._modele = modele
-
-    def invoke(self, messages: list[tuple[str, str]]) -> Any:
-        roles = {"system": "system", "human": "user", "ai": "assistant"}
-        reponse = self._client.chat.completions.create(
-            model=self._modele,
-            messages=[
-                {"role": roles.get(role, role), "content": contenu} for role, contenu in messages
-            ],
-            max_tokens=JETONS_MAX,
-            temperature=0,
-        )
-        return reponse.choices[0].message
+        return llm.fabriquer(jetons_max=JETONS_MAX, delai_s=DELAI_MAX_S)
 
 
 def _lire_json(texte: str) -> dict[str, Any]:

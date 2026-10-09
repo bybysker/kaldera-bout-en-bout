@@ -30,8 +30,6 @@ extracteur qu'on ne sait pas noter n'est pas un extracteur, c'est un pari.
 from __future__ import annotations
 
 import json
-import os
-import pathlib
 import re
 import time
 from dataclasses import dataclass, field
@@ -224,32 +222,18 @@ Règles :
 JETONS_MAX = 3000
 
 
-class _ClientOpenAI:
-    """Donne à un client compatible OpenAI la même forme que celle attendue ici."""
-
-    def __init__(self, client: Any, modele: str) -> None:
-        self._client = client
-        self._modele = modele
-
-    def invoke(self, messages: list[tuple[str, str]]) -> Any:
-        roles = {"system": "system", "human": "user", "ai": "assistant"}
-        reponse = self._client.chat.completions.create(
-            model=self._modele,
-            messages=[
-                {"role": roles.get(role, role), "content": contenu} for role, contenu in messages
-            ],
-            max_tokens=JETONS_MAX,
-            temperature=0,
-        )
-        return reponse.choices[0].message
-
-
 class ExtractionAssistee:
-    """Un modèle de langage, **si** l'environnement en fournit un.
+    """Un modèle de langage, **si** l'appelant en fournit un.
 
     Il ne décide rien : il lit un récit et remplit des champs, que l'opérateur relit ensuite.
     En cas d'échec — modèle absent, réponse illisible — le repli déterministe prend la main,
     pour que la démonstration fonctionne sans accès au modèle.
+
+    **Le cabinet ne construit pas son modèle : on le lui donne.** Ce n'est pas un détail de
+    style. Ce paquet simule un tiers, et un tiers n'emprunte pas l'infrastructure de Kaldera :
+    il a son propre fournisseur, qu'il configure lui-même. C'est aussi ce qui permet au test
+    de frontière de rester entier — aucun module de ce paquet n'importe quoi que ce soit du
+    système en dehors de sa porte publique.
     """
 
     nom = "modèle"
@@ -288,37 +272,8 @@ class ExtractionAssistee:
         return _declaration_depuis(donnees, recit, self.nom)
 
     def _modele(self) -> Any:
-        """Construit le client qui correspond à la forme de l'endpoint.
-
-        Deux familles d'endpoints coexistent chez Azure, et elles ne parlent pas le même
-        protocole :
-
-        - `…/openai/v1` ou `…/v1` : **compatible OpenAI**, c'est le client `openai` qui convient ;
-        - `…/models` : **Azure AI Inference**, c'est `AzureAIChatCompletionsModel`.
-
-        Envoyer l'un à l'autre produit un *« API version not supported »* qui ne dit pas du tout
-        ce qui ne va pas — c'est ce qui est arrivé ici avant d'aller regarder l'adresse.
-        """
-        if self._fabrique is not None:
-            return self._fabrique()
-        charger_env()
-        adresse = os.environ.get("AZURE_AI_ENDPOINT", "")
-        cle = os.environ.get("AZURE_AI_API_KEY", "")
-        if not adresse or not cle:
-            return None
-
-        modele = os.environ.get("AZURE_AI_MODEL", "Kimi-K2.6")
-        try:
-            if adresse.rstrip("/").endswith("/v1"):
-                from openai import OpenAI
-
-                return _ClientOpenAI(OpenAI(base_url=adresse, api_key=cle), modele)
-
-            from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
-
-            return AzureAIChatCompletionsModel(endpoint=adresse, credential=cle, model=modele)
-        except Exception:  # noqa: BLE001 — dépendance absente ou mal configurée
-            return None
+        """Le fournisseur donné à la construction, ou rien."""
+        return self._fabrique() if self._fabrique is not None else None
 
 
 def _lire_json(texte: str) -> dict[str, Any]:
@@ -361,29 +316,6 @@ def _declaration_depuis(donnees: dict[str, Any], recit: str, extracteur: str) ->
 # ------------------------------------------------------------- choix de l'extracteur
 
 
-def charger_env(chemin: str | pathlib.Path | None = None) -> None:
-    """Lit un fichier `.env` s'il existe, sans écraser ce qui est déjà dans l'environnement.
-
-    Dix lignes plutôt qu'une dépendance : le `Makefile` charge déjà le `.env`, mais un appel
-    direct à `python` ne le fait pas, et la démonstration doit marcher dans les deux cas.
-
-    **Rien de ce fichier n'est journalisé ni affiché.** Il porte une clé d'API.
-    """
-    fichier = (
-        pathlib.Path(chemin) if chemin else pathlib.Path(__file__).resolve().parents[2] / ".env"
-    )
-    if not fichier.exists():
-        return
-    for ligne in fichier.read_text(encoding="utf-8").splitlines():
-        ligne = ligne.strip()
-        if not ligne or ligne.startswith("#") or "=" not in ligne:
-            continue
-        cle, _, valeur = ligne.partition("=")
-        cle, valeur = cle.strip(), valeur.strip().strip("\"'")
-        if cle and valeur and cle not in os.environ:
-            os.environ[cle] = valeur
-
-
 def extraire_chronometre(
     extracteur: Extracteur, recit: str, aujourdhui: date | None = None
 ) -> Declaration:
@@ -394,7 +326,7 @@ def extraire_chronometre(
     poste — jusqu'à 92 % de l'engagement de service, pour un seul appel, avec un facteur 2,6
     entre deux exécutions.
 
-    C'est la justification empirique de `D25` : un modèle dans le chemin de décision ne ferait
+    C'est la justification empirique de `D31` : un modèle dans le chemin de décision ne ferait
     pas seulement perdre le déterminisme, il consommerait presque tout le budget de temps.
     """
     debut = time.perf_counter()
@@ -403,12 +335,10 @@ def extraire_chronometre(
     return declaration
 
 
-def extracteur(assiste: bool = False) -> Extracteur:
-    """L'extracteur à utiliser. Déterministe par défaut : le modèle se demande."""
-    return ExtractionAssistee() if assiste else ExtractionParRegles()
+def extracteur(assiste: bool = False, fabrique: Any = None) -> Extracteur:
+    """L'extracteur à utiliser. Déterministe par défaut : le modèle se demande.
 
-
-def modele_configure() -> bool:
-    """Un modèle est-il joignable ? Sert à ne pas promettre ce qui n'est pas disponible."""
-    charger_env()
-    return bool(os.environ.get("AZURE_AI_ENDPOINT") and os.environ.get("AZURE_AI_API_KEY"))
+    `fabrique` est le fournisseur de modèle du cabinet. Sans lui, l'extraction assistée se
+    replie sur les règles et l'annonce dans ses incertitudes.
+    """
+    return ExtractionAssistee(fabrique) if assiste else ExtractionParRegles()

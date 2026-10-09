@@ -18,8 +18,16 @@ from typing import Any
 import pytest
 
 from demo.client_externe import saisie
+from kaldera import llm
 
 AUJOURDHUI = date(2026, 10, 9)  # un vendredi
+
+
+#: Le fournisseur de modèle que l'interface donne au cabinet. Les tests passent le même :
+#: le cabinet ne construit jamais son modèle lui-même, c'est la frontière qu'ils gardent.
+def FOURNISSEUR():  # noqa: N802 — une constante, dont la valeur se calcule à l'appel
+    return llm.fabriquer(jetons_max=saisie.JETONS_MAX)
+
 
 #: Récits, et ce qu'on attend d'eux. `None` signifie « doit rester indéterminé ».
 RECITS: list[tuple[str, str, dict[str, Any]]] = [
@@ -217,7 +225,7 @@ def test_un_modele_qui_entoure_son_json_de_texte_reste_lisible() -> None:
 
 @pytest.mark.modele
 @pytest.mark.skipif(
-    not saisie.modele_configure(),
+    not llm.configure(),
     reason="aucun modèle configuré : AZURE_AI_ENDPOINT et AZURE_AI_API_KEY sont vides",
 )
 @pytest.mark.parametrize(("intitule", "recit", "attendu"), RECITS, ids=[r[0] for r in RECITS])
@@ -229,7 +237,7 @@ def test_le_modele_rend_ce_qu_on_attend(intitule: str, recit: str, attendu: dict
     vérifier d'abord *qui* a produit l'extraction. C'est la première version de ce test qui a
     laissé passer un modèle en échec.
     """
-    produite = saisie.ExtractionAssistee().extraire(recit, AUJOURDHUI)
+    produite = saisie.ExtractionAssistee(FOURNISSEUR).extraire(recit, AUJOURDHUI)
 
     echecs = [i for i in produite.incertitudes if "modèle" in i]
     assert not echecs, f"le modèle n'a pas répondu : {echecs}"
@@ -370,10 +378,12 @@ def test_le_traitement_complet_d_une_demande_est_cent_fois_plus_rapide_qu_un_mod
 
 
 @pytest.mark.modele
-@pytest.mark.skipif(not saisie.modele_configure(), reason="aucun modèle configuré")
+@pytest.mark.skipif(not llm.configure(), reason="aucun modèle configuré")
 def test_un_appel_au_modele_consomme_une_part_notable_du_budget() -> None:
     """Mesuré, pas affirmé. Si cela devenait faux, l'interface mentirait."""
-    declaration = saisie.extraire_chronometre(saisie.ExtractionAssistee(), RECITS[0][1], AUJOURDHUI)
+    declaration = saisie.extraire_chronometre(
+        saisie.ExtractionAssistee(FOURNISSEUR), RECITS[0][1], AUJOURDHUI
+    )
     assert declaration.extracteur == "modèle", declaration.incertitudes
     assert declaration.duree_ms > 200, (
         f"{declaration.duree_ms:.0f} ms — l'interface annonce des secondes, pas des "

@@ -35,7 +35,7 @@ if str(RACINE) not in sys.path:
 import streamlit as st  # noqa: E402
 
 import kaldera  # noqa: E402
-from demo import parcours, socle  # noqa: E402
+from demo import charger_env, parcours, socle  # noqa: E402
 from demo.agence import assistance  # noqa: E402
 from demo.agence import gestionnaire as module_gestionnaire  # noqa: E402
 from demo.agence import redaction  # noqa: E402
@@ -56,7 +56,10 @@ from demo.vues import (  # noqa: E402
 )
 from kaldera.orchestration import bornes as module_bornes  # noqa: E402
 from kaldera.orchestration import plan as module_plan  # noqa: E402
+from kaldera import llm  # noqa: E402
 from kaldera.partenaire import charge as module_charge  # noqa: E402
+
+charger_env()
 
 #: Les chiffres affichés dans l'espace technique.
 #:
@@ -64,7 +67,7 @@ from kaldera.partenaire import charge as module_charge  # noqa: E402
 #: faux ne se fait pas corriger : elle se fait croire. Les trois premiers sont donc confrontés à
 #: ce qu'ils prétendent décrire (`tests/chantier_1/test_demo.py`) ; s'ils divergent, un test
 #: tombe. Le quatrième ne peut pas l'être sans lancer `coverage` : il est daté à la place.
-TESTS_REPRODUCTIBLES = 721
+TESTS_REPRODUCTIBLES = 734
 TESTS_ACCEPTANCE = 56
 MUTATIONS_DETECTEES = 19
 COUVERTURE = "96 %"
@@ -213,7 +216,7 @@ with espaces[0]:
                 key=f"recit_{choix_recit}",
                 label_visibility="collapsed",
             )
-            modele_dispo = saisie.modele_configure()
+            modele_dispo = llm.configure()
             assiste = st.toggle(
                 "Extraction assistée par un modèle", value=False, disabled=not modele_dispo
             )
@@ -224,7 +227,12 @@ with espaces[0]:
                 )
 
         with droite:
-            declaration = saisie.extraire_chronometre(saisie.extracteur(assiste=assiste), recit)
+            # Le cabinet est un tiers : son fournisseur de modèle lui est donné ici, à la
+            # configuration, plutôt que construit dans son code.
+            fournisseur = (lambda: llm.fabriquer(jetons_max=saisie.JETONS_MAX)) if assiste else None
+            declaration = saisie.extraire_chronometre(
+                saisie.extracteur(assiste=assiste, fabrique=fournisseur), recit
+            )
             st.markdown("##### Ce que l'agence en a compris")
             champs = {
                 "type de sinistre": declaration.type_sinistre,
@@ -1363,7 +1371,10 @@ with espaces[2]:
                 "- Le **récit de l'assuré** ne part chez aucun modèle tant que le métier n'a "
                 "pas tranché\n"
                 "- Les tests qui appellent un modèle réel sont **écartés de la suite** : elle "
-                "reste reproductible"
+                "reste reproductible\n"
+                "- **Un seul endroit sait construire un client de modèle** : `kaldera.llm`, "
+                "qu'aucun agent n'importe. Les trois copies précédentes avaient déjà "
+                "divergé sur les jetons et le délai *(`AJ-10`)*"
             )
 
         st.info(
