@@ -1,0 +1,21 @@
+# Configuration de la démonstration Kaldera.
+#
+# L'adresse d'écoute est volontairement limitée à la boucle locale : par défaut, Streamlit
+# publie l'application sur toutes les interfaces du poste, y compris l'adresse publique.
+# Une démonstration n'a aucune raison d'être accessible depuis l'extérieur.
+
+[server]
+address = "127.0.0.1"
+port = 8501
+headless = true
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "light"
+primaryColor = "#0E7C7B"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F7F8"
+textColor = "#1B2A33"
+font = "sans serif"

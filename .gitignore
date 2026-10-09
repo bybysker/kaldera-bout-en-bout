@@ -45,3 +45,6 @@ out/
 *.sqlite
 *.db
 chroma-data/
+
+# Sortie de `make export` : regeneree a la demande, jamais suivie.
+demo/donnees.json
