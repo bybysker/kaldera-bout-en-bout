@@ -67,6 +67,15 @@ def test_echange_antifraude_respecte_le_contrat_et_ne_transmet_que_les_donnees_a
 
         verifier_issue_attendue(fiche, attendu)
         avis_partenaire = appel["reponse"]["result"]["artifacts"][0]["parts"][0]["data"]
+        # Le partenaire a répondu 200 : si la fiche n'a pas d'avis, c'est que la passerelle
+        # avait déjà abandonné (DELAI_ABANDON_S = 3 s) ou rejeté la réponse. Sous forte charge
+        # locale, un aller-retour peut franchir cette borne — le message doit le dire, sinon
+        # l'échec passe pour un mystère.
+        assert isinstance(fiche.get("avis_fraude"), dict), (
+            f"{reference} : le partenaire a répondu 200 mais la fiche ne retient aucun avis "
+            f"(avis_fraude={fiche.get('avis_fraude')!r}, mode_degrade={fiche.get('mode_degrade')!r}). "
+            "Cause attendue : abandon au-delà de 3 s, ou réponse écartée à la validation."
+        )
         assert fiche["avis_fraude"].get("score") == avis_partenaire["score"], (
             f"{reference} : score retenu {fiche['avis_fraude'].get('score')!r}, "
             f"le partenaire a répondu {avis_partenaire['score']!r}"
