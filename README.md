@@ -58,6 +58,9 @@ Les cibles `make` chargent `.env`. Hors `make` : `set -a; . ./.env; set +a`.
   - `observabilite.py` — journal structuré qui refuse d'écrire une donnée personnelle
   - `revue/` — relecture d'une décision close, **hors** du chemin de décision
 - `demo/` — la démonstration locale (trois espaces) et le client externe qui dépose des dossiers
+- `docs/developpement/` — la démarche : architecture, arbitrages, invariants, doctrine des
+  modèles et journal des ajustements. [`00_checklist.md`](docs/developpement/00_checklist.md) en
+  est le sommaire
 - `docs/specs_metier.md` — spécifications fonctionnelles
 - `docs/interface.md` — contrat d'intégration (points d'entrée, fiche de décision, trace, métriques)
 - `external_agent/` — service anti-fraude partenaire simulé et son contrat d'échange (`contrat.md`)
