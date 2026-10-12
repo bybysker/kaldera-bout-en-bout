@@ -584,8 +584,9 @@ with espaces[1]:
                     )
 
                 st.caption(
-                    "Le récit de l'assuré **n'est pas transmis** au modèle tant que le métier "
-                    "n'a pas tranché la question *(`D32`)*. Seuls des champs structurés "
+                    "Le récit de l'assuré **n'est pas transmis** au modèle : le métier l'a tranché "
+                    "*(`D32`)*, et le drapeau qui pouvait l'ouvrir a été retiré. Seuls des "
+                    "champs structurés "
                     "partent — la cohérence ne se juge donc que sur la **structure** : types "
                     "de pièces et montants au regard de la nature du sinistre."
                 )
@@ -1420,8 +1421,8 @@ with espaces[2]:
                 "- Aucun avis ne modifie une fiche\n"
                 "- Un modèle qui tombe rend « indisponible », jamais une erreur\n"
                 "- Toute remarque évoquant la **fraude** est écartée et comptée *(specs §2)*\n"
-                "- Le **récit de l'assuré** ne part chez aucun modèle tant que le métier n'a "
-                "pas tranché\n"
+                "- Le **récit de l'assuré** ne part chez aucun modèle — tranché par le métier, "
+                "et aucune variable d'environnement ne rouvre la porte\n"
                 "- Les tests qui appellent un modèle réel sont **écartés de la suite** : elle "
                 "reste reproductible\n"
                 "- **Un seul endroit sait construire un client de modèle** : `kaldera.llm`, "

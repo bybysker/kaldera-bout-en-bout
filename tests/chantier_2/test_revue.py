@@ -195,13 +195,8 @@ def test_au_plus_trois_points_sont_retenus() -> None:
 # ============================= frontière 3 · la minimisation, fermée par défaut
 
 
-def test_le_recit_de_l_assure_ne_part_pas_par_defaut() -> None:
-    """La question n'est pas technique : elle engage la conformité, et attend le métier.
-
-    Tant qu'elle n'est pas tranchée, c'est la règle la plus stricte qui s'applique. Une donnée
-    personnelle qui part parce que personne n'a dit non est une donnée qui part sans décision.
-    """
-    assert not charge.recit_autorise()
+def test_le_recit_de_l_assure_ne_part_pas() -> None:
+    """Tranché par le métier le 12 octobre 2026 : le récit ne part chez aucun modèle *(`D32`)*."""
     dossier = charge.construire(DEMANDE, FICHE)
     assert "recit_assure" not in dossier
     corps = json.dumps(dossier, ensure_ascii=False)
@@ -222,12 +217,24 @@ def test_aucune_donnee_personnelle_n_atteint_le_modele() -> None:
     assert not fuites, f"données personnelles transmises au modèle : {fuites}"
 
 
-def test_le_recit_part_si_le_metier_l_autorise(monkeypatch: pytest.MonkeyPatch) -> None:
-    """L'architecture tient les deux réponses : c'est le métier qui décide, pas le code."""
-    monkeypatch.setenv(charge.VARIABLE_RECIT, "1")
-    assert charge.recit_autorise()
+def test_aucune_variable_d_environnement_ne_rouvre_le_recit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Le drapeau qui ouvrait cette porte a été retiré. Ce test garde qu'il ne revienne pas.
+
+    L'architecture tenait les deux réponses tant que le métier n'avait pas tranché. Il a
+    tranché : le récit ne part pas. Un interrupteur laissé en place après coup n'est plus une
+    option ouverte, c'est une porte que personne ne surveille.
+    """
+    for drapeau in ("KALDERA_REVUE_RECIT", "KALDERA_RECIT", "REVUE_RECIT"):
+        monkeypatch.setenv(drapeau, "1")
     dossier = charge.construire(DEMANDE, FICHE)
-    assert dossier["recit_assure"] == DEMANDE["sinistre"]["description"]
+    corps = json.dumps(dossier, ensure_ascii=False)
+    assert "recit_assure" not in dossier
+    assert DEMANDE["sinistre"]["description"] not in corps
+    assert not hasattr(charge, "recit_autorise"), (
+        "la porte a été rouverte : `recit_autorise` est de retour dans la charge"
+    )
 
 
 def test_la_charge_se_construit_en_partant_de_rien() -> None:

@@ -1,19 +1,21 @@
 """Ce que le relecteur reçoit — et ce qu'il ne reçoit pas.
 
 Un modèle hébergé est un tiers. Le contrat anti-fraude interdit déjà de transmettre l'identité,
-l'IBAN et la description libre à un partenaire ; la question de savoir si un modèle de langage
-relève de la même règle **n'est pas technique**, elle engage la conformité.
+l'IBAN et la description libre à un partenaire ; savoir si un modèle de langage relève de la
+même règle n'était pas une question technique, elle engageait la conformité.
 
-Tant que le métier n'a pas tranché, ce module applique **la règle la plus stricte** : seuls des
-champs structurés partent, jamais le récit de l'assuré. Un drapeau permet d'ouvrir, et il est
-fermé par défaut — l'inverse serait un choix pris par omission.
+**Le métier a tranché le 12 octobre 2026 : le récit de l'assuré ne part chez aucun modèle
+hébergé** *(`D32`)*. Il n'y a donc plus de drapeau pour l'ouvrir. Un interrupteur qu'on garde
+« au cas où » après une décision contraire n'est plus une option laissée au métier : c'est une
+porte que personne ne surveille.
 
-    KALDERA_REVUE_RECIT=1   # le métier a tranché : la description peut partir
+Seuls les champs listés ci-dessous partent, écrits un par un. Conséquence assumée : la
+cohérence des pièces ne se juge que sur la **structure** — types et montants au regard de la
+nature du sinistre.
 """
 
 from __future__ import annotations
 
-import os
 from typing import Any
 
 #: Les champs du dossier que le relecteur voit toujours. Aucun ne désigne une personne.
@@ -36,17 +38,6 @@ CHAMPS_STRUCTURES = (
     "file",
     "mode_degrade",
 )
-
-VARIABLE_RECIT = "KALDERA_REVUE_RECIT"
-
-
-def recit_autorise() -> bool:
-    """Le métier a-t-il autorisé la transmission de la description libre ?
-
-    Fermé par défaut. Une donnée personnelle qui part parce que personne n'a dit non est une
-    donnée personnelle qui part sans décision.
-    """
-    return os.environ.get(VARIABLE_RECIT, "").strip() in ("1", "true", "oui")
 
 
 def construire(demande: dict[str, Any], fiche: dict[str, Any]) -> dict[str, Any]:
@@ -86,9 +77,6 @@ def construire(demande: dict[str, Any], fiche: dict[str, Any]) -> dict[str, Any]
         "file": fiche.get("file"),
         "mode_degrade": bool(fiche.get("mode_degrade")),
     }
-
-    if recit_autorise() and sinistre.get("description"):
-        dossier["recit_assure"] = sinistre["description"]
 
     return dossier
 
