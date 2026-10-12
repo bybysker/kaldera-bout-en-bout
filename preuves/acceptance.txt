@@ -1,0 +1,106 @@
+Preuve d'execution des tests d'acceptance
+Brief Kaldera - 2026-10-09 11:32
+Commande : uv run python -m pytest tests/acceptance -v
+Environnement : Python 3.11.9 (systeme), Windows 11
+========================================================================
+
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\adiallo\Desktop\TPs\Brief_Kaldera-developper_equipe_agents_bout-en-bout\kaldera-bout-en-bout\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\adiallo\Desktop\TPs\Brief_Kaldera-developper_equipe_agents_bout-en-bout\kaldera-bout-en-bout
+configfile: pyproject.toml
+plugins: anyio-4.15.1, langsmith-0.14.4, cov-6.3.0
+collecting ... collected 56 items
+
+tests/acceptance/test_collaboration_a2a.py::test_echange_antifraude_respecte_le_contrat_et_ne_transmet_que_les_donnees_autorisees[AF-01] PASSED [  1%]
+tests/acceptance/test_collaboration_a2a.py::test_echange_antifraude_respecte_le_contrat_et_ne_transmet_que_les_donnees_autorisees[AF-02] PASSED [  3%]
+tests/acceptance/test_collaboration_a2a.py::test_echange_antifraude_respecte_le_contrat_et_ne_transmet_que_les_donnees_autorisees[AF-03] PASSED [  5%]
+tests/acceptance/test_collaboration_a2a.py::test_echange_antifraude_respecte_le_contrat_et_ne_transmet_que_les_donnees_autorisees[AF-04] PASSED [  7%]
+tests/acceptance/test_collaboration_a2a.py::test_echange_antifraude_respecte_le_contrat_et_ne_transmet_que_les_donnees_autorisees[AF-05] PASSED [  8%]
+tests/acceptance/test_collaboration_a2a.py::test_echange_antifraude_respecte_le_contrat_et_ne_transmet_que_les_donnees_autorisees[AF-06] PASSED [ 10%]
+tests/acceptance/test_collaboration_a2a.py::test_echange_antifraude_respecte_le_contrat_et_ne_transmet_que_les_donnees_autorisees[AF-07] PASSED [ 12%]
+tests/acceptance/test_collaboration_a2a.py::test_reponse_invalide_du_partenaire_est_rejetee_et_non_propagee[INV-01] PASSED [ 14%]
+tests/acceptance/test_collaboration_a2a.py::test_reponse_invalide_du_partenaire_est_rejetee_et_non_propagee[INV-02] PASSED [ 16%]
+tests/acceptance/test_collaboration_a2a.py::test_reponse_invalide_du_partenaire_est_rejetee_et_non_propagee[INV-03] PASSED [ 17%]
+tests/acceptance/test_collaboration_a2a.py::test_reponse_invalide_du_partenaire_est_rejetee_et_non_propagee[INV-04] PASSED [ 19%]
+tests/acceptance/test_collaboration_a2a.py::test_reponse_invalide_du_partenaire_est_rejetee_et_non_propagee[INV-05] PASSED [ 21%]
+tests/acceptance/test_collaboration_a2a.py::test_reponse_invalide_du_partenaire_est_rejetee_et_non_propagee[INV-06] PASSED [ 23%]
+tests/acceptance/test_collaboration_a2a.py::test_reponse_invalide_du_partenaire_est_rejetee_et_non_propagee[INV-07] PASSED [ 25%]
+tests/acceptance/test_collaboration_a2a.py::test_partenaire_en_panne_le_mode_degrade_s_applique_sans_bloquer_le_reste[PAN-01] PASSED [ 26%]
+tests/acceptance/test_collaboration_a2a.py::test_partenaire_en_panne_le_mode_degrade_s_applique_sans_bloquer_le_reste[PAN-02] PASSED [ 28%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-01] PASSED [ 30%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-02] PASSED [ 32%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-03] PASSED [ 33%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-04] PASSED [ 35%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-05] PASSED [ 37%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-06] PASSED [ 39%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-07] PASSED [ 41%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-08] PASSED [ 42%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-09] PASSED [ 44%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-10] PASSED [ 46%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_nominal_produit_la_decision_attendue[NOM-11] PASSED [ 48%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-01] PASSED [ 50%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-02] PASSED [ 51%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-03] PASSED [ 53%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-04] PASSED [ 55%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-05] PASSED [ 57%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-06] PASSED [ 58%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-07] PASSED [ 60%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-08] PASSED [ 62%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-09] PASSED [ 64%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-10] PASSED [ 66%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[NOM-11] PASSED [ 67%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[AF-01] PASSED [ 69%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[AF-02] PASSED [ 71%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[AF-03] PASSED [ 73%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[AF-04] PASSED [ 75%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[AF-05] PASSED [ 76%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[AF-06] PASSED [ 78%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[AF-07] PASSED [ 80%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[INV-01] PASSED [ 82%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[INV-02] PASSED [ 83%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[INV-03] PASSED [ 85%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[INV-04] PASSED [ 87%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[INV-05] PASSED [ 89%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[INV-06] PASSED [ 91%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[INV-07] PASSED [ 92%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[PAN-01] PASSED [ 94%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[PAN-02] PASSED [ 96%]
+tests/acceptance/test_equipe_orchestration.py::test_toute_demande_aboutit_a_une_decision_ou_une_escalade_motivee[BCL-01] PASSED [ 98%]
+tests/acceptance/test_equipe_orchestration.py::test_scenario_piege_a_boucle_s_arrete_dans_les_bornes PASSED [100%]
+
+============================= 56 passed in 23.78s =============================
+
+========================================================================
+Suite complete (acceptance + chantier 1 + chantier 2)
+
+........................................................................ [ 88%]
+......................................................                   [100%]
+486 passed in 207.29s (0:03:27)
+
+========================================================================
+Epreuve des mutations : les tests savent-ils echouer ?
+
+mutation                                             test     verdict
+----------------------------------------------------------------------------
+le plafond s'applique avant la franchise             tombe    detecte
+le plafond redevient un critère d'éligibilité        tombe    detecte
+la trace nomme le répartiteur au lieu de l'agent     tombe    detecte
+le mode dégradé marque toutes les demandes           tombe    detecte
+le seuil du mode dégradé passe à 15 000 €            tombe    detecte
+l'arrêt n'est plus signalé dans la fiche             tombe    detecte
+la borne d'étapes est desserrée à 1 000              tombe    detecte
+les mesures comptent un appel de trop                tombe    detecte
+un agent importe un autre agent                      tombe    detecte
+un agent écrit directement dans le dossier           tombe    detecte
+l'agent anti-fraude publie un avis qu'il a inventé   tombe    detecte
+la page n'ajoute plus la racine au chemin d'import   tombe    detecte
+l'arbre de décision allume une branche trop tôt      tombe    detecte
+la charge est un filtre de la demande                tombe    detecte
+la validation accepte un champ en trop               tombe    detecte
+le delai d_abandon passe de 3 s a 30 s               tombe    detecte
+le registre n_empeche plus le second appel           tombe    detecte
+une defaillance d_agent remonte a l_appelant         tombe    detecte
+le niveau n_est plus confronte au score              tombe    detecte
+----------------------------------------------------------------------------
+19 mutations, 0 non detectee(s)

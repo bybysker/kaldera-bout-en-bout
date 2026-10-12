@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
-from . import traiter_lot
+from . import observabilite, traiter_lot
 
 
 def main() -> None:
@@ -15,7 +15,19 @@ def main() -> None:
     parser.add_argument("--scenario", action="append", help="identifiant(s) de scénario à rejouer")
     parser.add_argument("--partenaire", default=None, help="URL du partenaire anti-fraude")
     parser.add_argument("--trace", action="store_true", help="affiche la trace de chaque fiche")
+    parser.add_argument(
+        "--journal",
+        nargs="?",
+        const="-",
+        metavar="FICHIER",
+        help="journal d'exploitation : sur la sortie d'erreur, ou dans FICHIER",
+    )
     args = parser.parse_args()
+    if args.journal:
+        observabilite.configurer(
+            fichier=None if args.journal == "-" else args.journal,
+            console=args.journal == "-",
+        )
 
     for ligne in args.fichier.read_text(encoding="utf-8").splitlines():
         if not ligne.strip():

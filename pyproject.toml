@@ -20,6 +20,8 @@ dev = [
     "pytest-cov>=5,<7",
     "ruff>=0.6,<0.10",
     "mypy>=1.10,<2",
+    "streamlit>=1.65.0",
+    "openai>=2.54.0",
 ]
 
 [build-system]
@@ -32,6 +34,13 @@ packages = ["src/kaldera"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "."]
+# Les tests qui appellent reellement un modele de langage sont ecartes par defaut : ils
+# dependent d'un service exterieur et ne sont pas deterministes. La suite doit rester
+# reproductible — c'est un critere du brief. Pour les lancer : `make modele`.
+addopts = "-m 'not modele'"
+markers = [
+    "modele: appelle un modele de langage reel (non deterministe, service exterieur)",
+]
 
 [tool.ruff]
 line-length = 100
